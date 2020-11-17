@@ -1,0 +1,318 @@
+#include"stdafx.h"
+#include<math.h>
+#include<iostream>
+using namespace std;
+typedef double(*func)(double x);
+double *roots;
+double f1(double x) {
+	return 1;
+}
+
+double f2(double x) {
+	return x;
+}
+
+double f3(double x) {
+	return tan(x);
+}
+
+double determ(double** Arr, int size)
+{
+	int i, j;
+	double det = 0;
+	double** matr;
+	if (size == 1)
+	{
+		det = Arr[0][0];
+	}
+	else if (size == 2)
+	{
+		det = Arr[0][0] * Arr[1][1] - Arr[0][1] * Arr[1][0];
+	}
+	else
+	{
+		matr = new double*[size - 1];
+		for (i = 0; i<size; ++i)
+		{
+			for (j = 0; j<size - 1; ++j)
+			{
+				if (j<i)
+					matr[j] = Arr[j];
+				else
+					matr[j] = Arr[j + 1];
+			}
+			det += pow((double)-1, (i + j))*determ(matr, size - 1)*Arr[i][size - 1];
+		}
+		delete[] matr;
+	}
+	return det;
+}
+
+void transpose(double **mat, int n) {
+	for (int i = 0; i < 0; i++) {
+		for (int j = 0; j < i; j++) {
+			swap(mat[i][j], mat[j][i]);
+		}
+	}
+}
+
+void GaussMat(double **matrix, int n) {
+	double tp;
+	for (int k = 0; k < n; k++) {
+		if (matrix[k][k] == 0)
+			for (int z = k; z < n; z++) {
+				if (matrix[z][k] != 0) {
+					for (int p = 0; p < n; p++)
+						swap(matrix[z][p], matrix[k][p]);
+					break;
+				}
+			}
+		for (int i = k + 1; i < n; i++) {
+			tp = -matrix[i][k] / matrix[k][k];
+			for (int j = k; j < n + 1; j++) {
+				matrix[i][j] += tp*matrix[k][j];
+			}
+		}
+	}
+	
+	roots = new double[n];
+	double sum = 0;
+	roots[n - 1] = matrix[n - 1][n] / matrix[n - 1][n - 1];
+	for (int i = n - 2; i >-1; i--) {
+		sum = 0;
+		for (int j = i + 1; j < n; j++) {
+			sum += matrix[i][j] * roots[j];
+		}
+		roots[i] = (matrix[i][n] - sum) / matrix[i][i];
+	}
+	cout << "roots" << endl;
+	for (int j = 0; j < n; j++) {
+		cout << roots[j] << "\t";
+	}
+	cout << endl;
+}
+
+int main() {
+	double x, y;
+	double input[21] = { 2.64, 2.87, 2.78, 2.56, 2.74, 2.65, 2.33, 2.54, 2.57, 2.39, 2.17, 2.29, 1.95, 1.89, 2.10, 2.70, 3.26, 1.94, 2.35, 1.92, 1.94 };
+	func f[3];
+	f[0] = &f1; f[1] = &f2; f[2] = &f3;
+	double C[3][3], weight = 36, F[3];
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			C[i][j] = 0;
+			weight = 36;
+			for (int k = 0; k < 21; k++) {
+				if (k > 10)
+					weight = 1;
+				C[i][j] += weight*f[i](0.1*k - 1.0)*f[j](0.1*k - 1.0);
+				//cout << weight <<" "<< (-1.0 + 0.1*k)<<" "<< input[k] << endl;
+			}
+			cout << C[i][j] << " ";
+		}
+		cout << endl;
+	}
+	for (int i = 0; i < 3; i++) {
+		F[i] = 0;
+		weight = 36;
+		for (int k = 0; k < 21; k++) {
+			if (k > 10)
+				weight = 1;
+			F[i] += weight*f[i](0.1*k - 1.0)*input[k];
+		}
+		cout << F[i] << endl;
+	}
+
+	double **mat;
+	mat = new double*[3];
+	for (int i = 0; i < 3; i++) {
+		mat[i] = new double[4];
+		for (int j = 0; j < 3; j++) {
+			mat[i][j] = C[i][j];
+		}
+		mat[i][3] = F[i];
+	}
+	GaussMat(mat, 3);
+
+	double R=0,sum=0;
+	weight = 36;
+	for (int i = 0; i < 21; i+=10){
+		sum = 0;
+		for (int k = 0; k < 3;k++)
+			sum += roots[k] * f[k](-1.0 + 0.1*i);
+		if (i > 10)
+			weight = 1;
+		R += weight*(input[i] - sum)*(input[i] - sum);
+	}
+	cout <<R << endl;
+	system("pause");
+}
+//#include "stdafx.h"
+//#include <iostream>
+//#include <math.h>
+//
+//using namespace std;
+//
+//#define eps 0.00001 
+//
+//double * Method_Gauss(double **Array, double *Arrayb, const int size)
+//{
+//	double *x, max;
+//	int k, index;
+//	x = new double[size];
+//	k = 0;
+//	while (k < size)
+//	{
+//
+//		max = abs(Array[k][k]);
+//		index = k;
+//		for (int i = k + 1; i < size; i++)
+//		{
+//			if (abs(Array[i][k]) > max)
+//			{
+//				max = abs(Array[i][k]);
+//				index = i;
+//			}
+//		}
+//
+//		if (max < eps)
+//		{
+//			cout << "Error, zero-ctolbec ";
+//			cout << index << " of matric A " << endl;
+//			return 0;
+//		}
+//		for (int j = 0; j < size; j++)
+//		{
+//			double temp = Array[k][j];
+//			Array[k][j] = Array[index][j];
+//			Array[index][j] = temp;
+//		}
+//		double temp = Arrayb[k];
+//		Arrayb[k] = Arrayb[index];
+//		Arrayb[index] = temp;
+//
+//		for (int i = k; i < size; i++)
+//		{
+//			double temp = Array[i][k];
+//			if (abs(temp) < eps) continue;
+//			for (int j = 0; j < size; j++)
+//				Array[i][j] = Array[i][j] / temp;
+//			Arrayb[i] = Arrayb[i] / temp;
+//			if (i == k) continue;
+//			for (int j = 0; j < size; j++)
+//				Array[i][j] = Array[i][j] - Array[k][j];
+//
+//			Arrayb[i] = Arrayb[i] - Arrayb[k];
+//		}
+//		k++;
+//	}
+//
+//	for (k = size - 1; k >= 0; k--)
+//	{
+//		x[k] = Arrayb[k];
+//		for (int i = 0; i < k; i++)
+//			Arrayb[i] = Arrayb[i] - Array[i][k] * x[k];
+//	}
+//	x[0] /= (-4);
+//
+//	return x;
+//}
+//
+//int main()
+//{
+//	const int size = 3, N = 21;
+//	int i, j, q;
+//	double summ, eps1 = 1, eps2 = 6;
+//	double x[N] = { -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 };
+//	double y[N] = { 2.64, 2.87, 2.78, 2.56, 2.74, 2.65, 2.33, 2.54, 2.57, 2.39, 2.17, 2.29, 1.95, 1.89, 2.10, 2.70, 3.26, 1.94, 2.35, 1.92, 1.94 };
+//	double g[size][N];
+//	double *a;
+//	double *Arrayb = new double[size];
+//	double **M = new double*[size];
+//	for (int i = 0; i < size; i++)
+//	{
+//		M[i] = new double[size];
+//	}
+//
+//	for (int i = 0; i < N; i++)
+//	{
+//		g[0][i] = tan(x[i]);
+//	}
+//
+//	for (int i = 0; i < N; i++)
+//	{
+//		g[1][i] = x[i];
+//	}
+//
+//	for (int i = 0; i < N; i++)
+//	{
+//		g[2][i] = 1;
+//	}
+//
+//
+//	for (q = 0; q < size; q++)
+//	{
+//		summ = 0;
+//		for (i = 0; i < size; i++)
+//		{
+//			
+//			for (j = 0; j <= N / 2; j++)
+//			{
+//				summ += eps1 * g[q][j] * g[i][j];
+//			}
+//			//summ = 0;
+//			for (int k = j; k < N; k++)
+//			{
+//				summ += eps2 * g[q][k] * g[i][k];
+//			}
+//
+//			M[q][i] = summ;
+//		}
+//	}
+//
+//
+//	for (i = 0; i < size; i++)
+//	{
+//		summ = 0;
+//		for (j = 0; j <= N / 2; j++)
+//		{
+//			summ += eps1 * g[i][j] * y[j];
+//		}
+//		//cout << summ << endl;
+//
+//		for (int k = j; k < N; k++)
+//		{
+//			summ += eps2 * g[i][k] * y[k];
+//		}
+//		//cout << summ << endl;
+//		//cout << endl;
+//
+//		Arrayb[i] = summ;
+//	}
+//
+//	/*for (int i = 0; i < size; i++)
+//	{
+//	cout << Arrayb[i] << endl;
+//	}
+//	cout << endl;
+//
+//	for (int i = 0; i < size; i++)
+//	{
+//	for (int j = 0; j < size; j++)
+//	{
+//	cout << M[i][j] << "	";
+//	}
+//	cout << endl;
+//	}*/
+//	a = Method_Gauss(M, Arrayb, size);
+//
+//	swap(a[0], a[2]);
+//
+//	for (int i = 0; i < size; i++)
+//		cout << "a[" << i << "]=" << a[i] << endl;
+//	double R = eps1*(y[0] - (g[0][0] + g[1][0] + g[2][0])) + eps1*(y[0] - (g[0][10] + g[1][10] + g[2][10])) + eps2*(y[0] - (g[0][20] + g[1][20] + g[2][20]));
+//	cout << R << endl;
+//
+//	system("pause");
+//	return 0;
+//}
